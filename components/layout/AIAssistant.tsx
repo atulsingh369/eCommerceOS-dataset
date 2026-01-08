@@ -234,7 +234,6 @@ const AIAssistant = () => {
                                     >
                                       {/* image */}
                                       <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-black/10">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
                                           src={p.image}
                                           alt={p.name}

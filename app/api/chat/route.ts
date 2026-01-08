@@ -1,6 +1,6 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { convertToModelMessages, streamText, tool } from 'ai';
-import { number, string, z } from 'zod';
+import { z } from 'zod';
 import { Product, searchProducts } from '@/lib/db/products';
 
 const google = createGoogleGenerativeAI({
@@ -8,33 +8,6 @@ const google = createGoogleGenerativeAI({
 });
 
 import { searchParamsSchema, compareProductsParamsSchema } from '@/lib/validations/chat';
-
-const compareProductsReturn = z.object({
-    message: z.string().optional(),
-    ranked: z
-        .array(
-            z.object({
-                id: z.string(),
-                name: z.string(),
-                price: z.number(),
-                rating: z.number(),
-                reviews: z.number(),
-                score: z.number(),
-            })
-        )
-        .optional(),
-    best: z
-        .object({
-            id: z.string(),
-            name: z.string(),
-            price: z.number(),
-            rating: z.number(),
-            reviews: z.number(),
-            score: z.number(),
-        })
-        .optional(),
-});
-
 
 // Define types for better type inference
 type SearchResult = {
@@ -140,7 +113,7 @@ Respond: “Please specify what product you want to compare.”
                         message: `Found ${result.length} result(s).`
                     };
                 },
-            } as any),
+            } as any), // eslint-disable-line @typescript-eslint/no-explicit-any
             compareProducts: tool({
                 description: "Compare products by rating, reviews, and price.",
                 parameters: compareProductsParamsSchema,
@@ -170,7 +143,7 @@ Respond: “Please specify what product you want to compare.”
                         best: sorted[0],
                     };
                 },
-            } as any),
+            } as any), // eslint-disable-line @typescript-eslint/no-explicit-any
         },
     });
 

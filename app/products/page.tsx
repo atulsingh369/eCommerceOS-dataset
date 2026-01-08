@@ -11,7 +11,7 @@ import {
   Product,
 } from "@/lib/db/products";
 import { ProductFilters } from "@/components/product/ProductFilters";
-import { productFilters } from "@/components/product/ProductFilters";
+
 import { formatPrice, truncate } from "@/lib/utils";
 
 interface ProductsPageProps {

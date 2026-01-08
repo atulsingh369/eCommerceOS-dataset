@@ -1,4 +1,4 @@
-import { renderHook, act } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { useCart } from "@/context/CartContext";
 
 // Mock the hook implementation if we are testing the hook itself we need a provider

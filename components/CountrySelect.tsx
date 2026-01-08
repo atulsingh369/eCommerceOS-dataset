@@ -15,7 +15,7 @@ const CountrySelect = ({ value, onChange }: CountrySelectProps) => {
     options.find((c) => c.value === value) || null
   );
 
-  const handleChange = (val: any) => {
+  const handleChange = (val: { value: string; label: string } | null) => {
     setSelected(val);
     onChange(val.value);
   };

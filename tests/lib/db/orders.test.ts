@@ -6,6 +6,7 @@ jest.mock('@/lib/firebase/config', () => ({
 }));
 
 import { createOrder } from '@/lib/firebase/orders';
+import { setDoc } from 'firebase/firestore';
 
 jest.mock('firebase/firestore', () => ({
     getFirestore: jest.fn(),
@@ -31,6 +32,7 @@ describe('Order DB Helpers', () => {
             userId: 'user-1'
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = await createOrder('user-1', orderData as any);
         expect(result.orderId).toMatch(/^ORD-/);
         expect(setDoc).toHaveBeenCalled();

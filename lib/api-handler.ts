@@ -2,13 +2,15 @@ import { NextResponse } from "next/server";
 import { AppError } from "./exceptions";
 import { z } from "zod";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RouteHandler = (req: Request, ...args: any[]) => Promise<Response>;
 
 export function apiHandler(handler: RouteHandler): RouteHandler {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return async (req: Request, ...args: any[]) => {
         try {
             return await handler(req, ...args);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("API Error:", error);
 
             if (error instanceof AppError) {
