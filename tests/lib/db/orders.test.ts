@@ -7,12 +7,13 @@ jest.mock('@/lib/firebase/config', () => ({
 
 import { createOrder } from '@/lib/firebase/orders';
 
-// Mock firebase
 jest.mock('firebase/firestore', () => ({
     getFirestore: jest.fn(),
     collection: jest.fn(),
     addDoc: jest.fn(),
     serverTimestamp: jest.fn(),
+    doc: jest.fn(),
+    setDoc: jest.fn(),
 }));
 
 describe('Order DB Helpers', () => {

@@ -14,7 +14,6 @@ export default [
       // Disable specific rules that might cause noise in a dataset repo
       "@typescript-eslint/ban-ts-comment": "off",
       "@typescript-eslint/no-require-imports": "off",
-      "@next/next/no-img-element": "off",
     },
   },
 ];

@@ -5,7 +5,7 @@ jest.mock('@/lib/firebase/config', () => ({
     googleProvider: {},
 }));
 
-import { getProducts, getProduct } from '@/lib/db/products';
+import { getProducts, getProductById } from '@/lib/db/products';
 
 // Mock firebase
 jest.mock('firebase/firestore', () => ({
@@ -36,7 +36,7 @@ describe('Product DB Helpers', () => {
         expect(products[0].name).toBe('Test Product');
     });
 
-    it('getProduct returns single item', async () => {
+    it('getProductById returns single item', async () => {
         const { getDoc } = require('firebase/firestore');
         getDoc.mockResolvedValue({
             exists: () => true,
@@ -44,7 +44,7 @@ describe('Product DB Helpers', () => {
             data: () => ({ name: 'Test Product', price: 100 })
         });
 
-        const product = await getProduct('1');
+        const product = await getProductById('1');
         expect(product).toBeDefined();
         expect(product?.name).toBe('Test Product');
     });
