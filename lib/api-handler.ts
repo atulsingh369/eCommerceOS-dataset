@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { AppError } from "./exceptions";
 import { z } from "zod";
+import { Result, isOk, isErr } from "./result";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RouteHandler = (req: Request, ...args: any[]) => Promise<Response>;
@@ -15,14 +16,14 @@ export function apiHandler(handler: RouteHandler): RouteHandler {
 
             if (error instanceof AppError) {
                 return NextResponse.json(
-                    { error: error.message },
+                    { error: error.message, code: error.code },
                     { status: error.statusCode }
                 );
             }
 
             if (error instanceof z.ZodError) {
                 return NextResponse.json(
-                    { error: "Validation Error", details: error.errors },
+                    { error: "Validation Error", details: (error as z.ZodError<any>).issues },
                     { status: 400 }
                 );
             }

@@ -51,7 +51,7 @@ export const POST = apiHandler(async (req: Request) => {
     const { messages } = await req.json();
 
     const result = streamText({
-        model: google("gemini-2.5-flash"),
+        model: google("gemini-1.5-flash"),
         messages: convertToModelMessages(messages),
         system: `
 You are an AI shopping assistant.
@@ -69,7 +69,7 @@ Your responsibilities:
       After retrieving products from searchProducts, call compareProducts.
 
 Rules:
-- NEVER compare by yourself. Only compare using the compareProducts tool.
+- NEVER compare by yourself. Only compare using the tool.
 - ALWAYS keep product comparison objective: rating, reviews, and price.
 - If fewer than 2 products are found, explain that more data is needed.
 - If user gives too many words, extract only the product keyword.
@@ -120,9 +120,7 @@ Respond: “Please specify what product you want to compare.”
                 execute: async ({ products }: z.infer<typeof compareProductsParamsSchema>): Promise<CompareResult> => {
                     if (!products || products.length < 2) {
                         return {
-                            message: "Need at least 2 products to compare.",
-                            ranked: [],
-                            best: undefined,
+                            message: "Please provide at least two products to compare.",
                         };
                     }
 
@@ -143,7 +141,7 @@ Respond: “Please specify what product you want to compare.”
                         best: sorted[0],
                     };
                 },
-            } as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+            } as any),
         },
     });
 

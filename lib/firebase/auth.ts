@@ -52,7 +52,10 @@ async function linkEmailPasswordToGoogle(email: string, password: string, name: 
 
         // Step 5: Update Firestore document
         const updatedUser = auth.currentUser || user;
-        await createOrUpdateUserDocument(updatedUser);
+        const result = await createOrUpdateUserDocument(updatedUser);
+        if (!result.ok) {
+            throw result.error;
+        }
 
         return {
             user: updatedUser,
@@ -88,7 +91,10 @@ export async function signupWithEmailPassword(
         await user.reload();
         const updatedUser = auth.currentUser || user;
 
-        await createOrUpdateUserDocument(updatedUser);
+        const result = await createOrUpdateUserDocument(updatedUser);
+        if (!result.ok) {
+            throw result.error;
+        }
 
         return {
             user: updatedUser,
@@ -135,7 +141,10 @@ export async function loginWithEmailPassword(email: string, password: string): P
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         // Run after ANY sign-in method to ensure Firestore is up to date
-        await createOrUpdateUserDocument(userCredential.user);
+        const result = await createOrUpdateUserDocument(userCredential.user);
+        if (!result.ok) {
+            throw result.error;
+        }
         return userCredential.user;
     } catch (error) {
         const friendlyMessage = logAndGetFriendlyError(error, "Login");

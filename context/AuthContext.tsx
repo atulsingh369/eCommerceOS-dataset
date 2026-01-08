@@ -38,7 +38,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Centralized handler for successful login
   const handleAuthSuccess = async (authUser: User) => {
     try {
-      await createOrUpdateUserDocument(authUser);
+      const result = await createOrUpdateUserDocument(authUser);
+      if (!result.ok) {
+        console.error("Failed to create/update user document:", result.error);
+        // Optionally handle UI feedback here
+      }
       toast.success("Signed in with Google!");
       router.push("/");
     } catch (error) {
