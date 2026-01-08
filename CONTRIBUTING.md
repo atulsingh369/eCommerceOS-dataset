@@ -1,4 +1,4 @@
-# Contributing to eCommerceOS
+# Contributing to eCommerceOS-dataset
 
 Thank you for your interest in contributing! We welcome contributions from the community.
 
@@ -7,8 +7,8 @@ Thank you for your interest in contributing! We welcome contributions from the c
 1. **Fork the repository** on GitHub.
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/your-username/eCommerceOS.git
-   cd eCommerceOS
+   git clone https://github.com/your-username/eCommerceOS-dataset.git
+   cd eCommerceOS-dataset
    ```
 3. **Install dependencies**:
    ```bash
