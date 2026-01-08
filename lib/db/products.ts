@@ -2,7 +2,6 @@ import { db } from "@/lib/firebase";
 import {
     collection,
     getDocs,
-    getDoc,
     doc,
     query,
     where,
@@ -12,6 +11,9 @@ import {
     onSnapshot,
     Unsubscribe
 } from "firebase/firestore";
+import { BaseRepository } from "./repository";
+import { Result, Ok, Err, isOk } from "@/lib/result";
+import { AppError } from "@/lib/exceptions";
 
 export interface Category {
     id: string;
@@ -36,6 +38,26 @@ export interface Product {
     isNew: boolean;
 }
 
+class ProductRepository extends BaseRepository<Product> {
+    constructor() {
+        super("products");
+    }
+
+    async findBySlug(slug: string): Promise<Result<Product | null, AppError>> {
+        return this.withRetry(async () => {
+            const q = query(this.collectionRef, where("slug", "==", slug), limit(1));
+            const snapshot = await getDocs(q);
+            if (snapshot.empty) return null;
+            const doc = snapshot.docs[0];
+            return { id: doc.id, ...doc.data() } as Product;
+        });
+    }
+}
+
+export const productRepository = new ProductRepository();
+
+// Backwards compatibility layer (wrapping Repository)
+
 export const getProducts = async (userInfo?: {
     category?: string;
     sort?: string;
@@ -47,7 +69,6 @@ export const getProducts = async (userInfo?: {
     maxPrice?: number;
 }) => {
     try {
-        const q = collection(db, "products");
         const constraints: QueryConstraint[] = [];
 
         if (userInfo?.category) {
@@ -67,36 +88,20 @@ export const getProducts = async (userInfo?: {
             constraints.push(where("price", "<=", Number(userInfo.maxPrice)));
         }
 
-
-        // Simple sort mapping - Note: Firestore requires the field in equality filter (category) to be first in orderBy, or use composite index.
-        // For simplicity with multiple filters, we might do client side sorting/filtering if constraints conflict or need indexes.
-        // But price range + price sort works fine if price is the inequality field. 
         if (userInfo?.sort === 'price_asc') {
             constraints.push(orderBy("price", "asc"));
         } else if (userInfo?.sort === 'price_desc') {
             constraints.push(orderBy("price", "desc"));
         }
 
-        const finalQuery = query(q, ...constraints);
-        const querySnapshot = await getDocs(finalQuery);
+        const result = await productRepository.getAll(constraints);
 
-        let results = querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                name: data.name,
-                slug: data.slug,
-                price: Number(data.price),
-                category: data.category,
-                rating: Number(data.rating),
-                reviews: Number(data.reviews),
-                image: data.image,
-                images: data.images || [],
-                description: data.description,
-                features: data.features || [],
-                isNew: !!data.isNew,
-            } as Product;
-        });
+        if (!isOk(result)) {
+            console.error("Error fetching products:", result.error);
+            return [];
+        }
+
+        let results = result.value;
 
         if (userInfo?.search) {
             const lowerQuery = userInfo.search.toLowerCase();
@@ -108,10 +113,8 @@ export const getProducts = async (userInfo?: {
             );
         }
 
-        // Manual Pagination (Client-side style since we don't have total count easily with constraints)
-        // ideally we would use limit/startAfter in firestore but for filter flexibility we do it here
         const page = userInfo?.page || 1;
-        const limitCount = userInfo?.limit || 100; // Default showing many if not specified
+        const limitCount = userInfo?.limit || 100;
 
         if (userInfo?.limit) {
             const start = (page - 1) * limitCount;
@@ -127,33 +130,18 @@ export const getProducts = async (userInfo?: {
 
 export const getProductById = async (id: string) => {
     try {
-        const docRef = doc(db, "products", id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            return {
-                id: docSnap.id,
-                name: data.name,
-                slug: data.slug,
-                price: Number(data.price),
-                category: data.category,
-                rating: Number(data.rating),
-                reviews: Number(data.reviews),
-                image: data.image,
-                images: data.images || [],
-                description: data.description,
-                features: data.features || [],
-                isNew: !!data.isNew,
-            } as Product;
-        } else {
-            return null;
+        const result = await productRepository.getById(id);
+        if (isOk(result)) {
+            return result.value;
         }
+        return null; // Maintain legacy return type of null on failure
     } catch (error) {
         console.error("Error getting product:", error);
         return null;
     }
 }
 
+// Categories don't need a full repository yet unless we expand them
 export const getCategories = async () => {
     try {
         const querySnapshot = await getDocs(collection(db, "categories"));
@@ -173,50 +161,36 @@ export const getCategories = async () => {
     }
 }
 
+// Keep searchProducts mostly as is but cleaner types
 export const searchProducts = async (queryText: string) => {
     try {
-        const querySnapshot = await getDocs(collection(db, "products"));
+        const result = await productRepository.getAll();
 
-        const allProducts = querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                name: data.name ?? "",
-                slug: data.slug ?? "",
-                price: Number(data.price ?? 0),
-                category: data.category ?? "",
-                rating: Number(data.rating ?? 0),
-                reviews: Number(data.reviews ?? 0),
-                image: data.image ?? "",
-                images: data.images ?? [],
-                description: data.description ?? "",
-                features: data.features ?? [],
-                isNew: !!data.isNew,
-            } as Product;
-        });
+        if (!isOk(result)) return [];
 
+        const allProducts = result.value;
         const lowerQuery = (queryText ?? "").toLowerCase();
 
         const filtered = allProducts.filter(product => {
             return (
-                product.name.toLowerCase().includes(lowerQuery) ||
-                product.slug.toLowerCase().includes(lowerQuery) ||
-                product.category.toLowerCase().includes(lowerQuery)
+                (product.name || "").toLowerCase().includes(lowerQuery) ||
+                (product.slug || "").toLowerCase().includes(lowerQuery) ||
+                (product.category || "").toLowerCase().includes(lowerQuery)
             );
         });
 
         const ranked = filtered.sort((a, b) => {
             const aScore =
-                (a.name.toLowerCase().startsWith(lowerQuery) ? 3 : 0) +
-                (a.name.toLowerCase().includes(lowerQuery) ? 2 : 0) +
-                (a.slug.toLowerCase().includes(lowerQuery) ? 2 : 0) +
-                (a.category.toLowerCase().includes(lowerQuery) ? 1 : 0);
+                ((a.name || "").toLowerCase().startsWith(lowerQuery) ? 3 : 0) +
+                ((a.name || "").toLowerCase().includes(lowerQuery) ? 2 : 0) +
+                ((a.slug || "").toLowerCase().includes(lowerQuery) ? 2 : 0) +
+                ((a.category || "").toLowerCase().includes(lowerQuery) ? 1 : 0);
 
             const bScore =
-                (b.name.toLowerCase().startsWith(lowerQuery) ? 3 : 0) +
-                (b.name.toLowerCase().includes(lowerQuery) ? 2 : 0) +
-                (b.slug.toLowerCase().includes(lowerQuery) ? 2 : 0) +
-                (b.category.toLowerCase().includes(lowerQuery) ? 1 : 0);
+                ((b.name || "").toLowerCase().startsWith(lowerQuery) ? 3 : 0) +
+                ((b.name || "").toLowerCase().includes(lowerQuery) ? 2 : 0) +
+                ((b.slug || "").toLowerCase().includes(lowerQuery) ? 2 : 0) +
+                ((b.category || "").toLowerCase().includes(lowerQuery) ? 1 : 0);
 
             return bScore - aScore;
         });
@@ -229,23 +203,8 @@ export const searchProducts = async (queryText: string) => {
     }
 };
 
-/**
- * Subscribe to real-time updates for all products
- * 
- * @param callback - Callback function called with products array on updates
- * @param filters - Optional filters (category, featured, minPrice, maxPrice)
- * @returns Unsubscribe function to stop listening
- * 
- * @example
- * ```typescript
- * const unsubscribe = subscribeToProducts((products) => {
- *   setProducts(products); // Auto-updates when products change
- * }, { category: 'electronics' });
- * 
- * // Cleanup
- * return () => unsubscribe();
- * ```
- */
+// Subscriptions remain using raw Firestore onSnapshot as Repository pattern doesn't naturally fit observables
+// without more complex abstraction (e.g. Observable pattern)
 export function subscribeToProducts(
     callback: (products: Product[]) => void,
     filters?: {
@@ -284,7 +243,7 @@ export function subscribeToProducts(
                 const data = doc.data();
                 return {
                     id: doc.id,
-                    name: data.name,
+                    name: data.name, // ... spread would be cleaner if sure of types
                     slug: data.slug,
                     price: Number(data.price),
                     category: data.category,
@@ -308,25 +267,6 @@ export function subscribeToProducts(
     return unsubscribe;
 }
 
-/**
- * Subscribe to real-time updates for a single product
- * 
- * @param productId - The product ID
- * @param callback - Callback function called with product data on updates
- * @returns Unsubscribe function to stop listening
- * 
- * @example
- * ```typescript
- * const unsubscribe = subscribeToProduct(productId, (product) => {
- *   if (product) {
- *     setProduct(product); // Auto-updates when product changes
- *   }
- * });
- * 
- * // Cleanup
- * return () => unsubscribe();
- * ```
- */
 export function subscribeToProduct(
     productId: string,
     callback: (product: Product | null) => void
@@ -365,22 +305,6 @@ export function subscribeToProduct(
     return unsubscribe;
 }
 
-/**
- * Subscribe to real-time updates for all categories
- * 
- * @param callback - Callback function called with categories array on updates
- * @returns Unsubscribe function to stop listening
- * 
- * @example
- * ```typescript
- * const unsubscribe = subscribeToCategories((categories) => {
- *   setCategories(categories); // Auto-updates when categories change
- * });
- * 
- * // Cleanup
- * return () => unsubscribe();
- * ```
- */
 export function subscribeToCategories(
     callback: (categories: Category[]) => void
 ): Unsubscribe {
