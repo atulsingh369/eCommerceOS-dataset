@@ -88,7 +88,7 @@ export default function ProfilePage() {
     });
 
     if (!result.success) {
-      const firstError = result.error.errors[0];
+      const firstError = result.error.issues[0];
       toast.error(firstError.message);
       return;
     }
