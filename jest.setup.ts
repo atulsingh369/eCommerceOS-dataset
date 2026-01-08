@@ -13,3 +13,29 @@ if (typeof global.TextEncoder === 'undefined') {
     global.TextEncoder = TextEncoder;
     global.TextDecoder = TextDecoder;
 }
+
+// Polyfill Response/Request for Firebase Auth
+if (typeof global.Response === 'undefined') {
+    // @ts-ignore
+    global.Response = class Response {
+        constructor() { }
+    };
+}
+if (typeof global.Request === 'undefined') {
+    // @ts-ignore
+    global.Request = class Request {
+        constructor() { }
+    };
+}
+if (typeof global.Headers === 'undefined') {
+    // @ts-ignore
+    global.Headers = class Headers {
+        constructor() { }
+        append() { }
+        delete() { }
+        get() { }
+        has() { }
+        set() { }
+        forEach() { }
+    }
+}
