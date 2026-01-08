@@ -66,3 +66,31 @@ describe('calculateCartTotals', () => {
         expect(total).toBe(0);
     });
 });
+
+import { validateCart } from '@/lib/cart';
+
+describe('validateCart', () => {
+    it('returns valid for valid items', () => {
+        const result = validateCart(mockItems);
+        expect(result.valid).toBe(true);
+        expect(result.warnings).toHaveLength(0);
+    });
+
+    it('warns if quantity exceeds max', () => {
+        const invalidItems = [
+            { ...mockItems[0], quantity: 11 }
+        ];
+        const result = validateCart(invalidItems);
+        expect(result.valid).toBe(false);
+        expect(result.warnings[0]).toContain('exceeds maximum quantity');
+    });
+
+    it('warns if quantity exceeds stock', () => {
+        const outOfStockItems = [
+            { ...mockItems[0], quantity: 5, stock: 3 }
+        ];
+        const result = validateCart(outOfStockItems);
+        expect(result.valid).toBe(false);
+        expect(result.warnings[0]).toContain('exceeds available stock');
+    });
+});
