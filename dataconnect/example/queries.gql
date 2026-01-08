@@ -1,0 +1,26 @@
+mutation CreateCategory @auth(level: USER) {
+  category_insert(data: {
+    name: "New Category"
+    description: "A brand new category"
+  })
+}
+
+query ListProductsByCategory($categoryId: UUID!) @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  products(where: {categoryId: {eq: $categoryId}}) {
+    id
+    name
+    price
+  }
+}
+
+mutation UpdateProductPrice($id: UUID!, $price: Float!) @auth(level: USER) {
+  product_update(key: {id: $id}, data: {price: $price})
+}
+
+query GetUserOrders($userId: UUID!) @auth(level: USER) {
+  orders(where: {userId: {eq: $userId}}) {
+    id
+    orderDate
+    totalAmount
+  }
+}
