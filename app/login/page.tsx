@@ -51,9 +51,12 @@ export default function LoginPage() {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const validationResult = ResetPasswordSchema.safeParse({ email: resetEmail });
-    
+    const validationResult = ResetPasswordSchema.safeParse({
+      email: resetEmail,
+    });
+
     if (!validationResult.success) {
       toast.error(validationResult.error.issues[0].message);
       return;
