@@ -31,7 +31,7 @@ describe("Validations", () => {
             const result = checkoutSchema.safeParse(invalid);
             expect(result.success).toBe(false);
             if (!result.success) {
-                expect(result.error.errors[0].path).toContain("pincode");
+                expect(result.error.issues[0].path).toContain("pincode");
             }
         });
     });
