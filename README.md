@@ -1,4 +1,6 @@
-# eCommerceOS-dataset
+# eCommerceOS Dataset
+
+![CI](https://github.com/atulsingh369/eCommerceOS-dataset/actions/workflows/ci.yml/badge.svg)
 
 A modular, AI-powered e-commerce platform built for modern retail.
 

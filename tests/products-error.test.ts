@@ -1,5 +1,5 @@
 
-import { render, screen } from '@testing-library/react';
+import { } from '@testing-library/react';
 import ErrorComponent from '@/app/products/error';
 
 describe('Products Error Boundary', () => {

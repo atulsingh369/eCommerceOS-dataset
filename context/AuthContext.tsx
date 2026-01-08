@@ -98,10 +98,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       // If null is returned, it means Redirect flow started (page will reload)
       // We don't need to do anything here.
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error signing in with Google:", error);
       // Only show error toast if it's not a user cancellation (which is handled in auth.ts but safe to double check)
-      if (error.message !== "Sign-in cancelled by user") {
+      if (
+        error instanceof Error &&
+        error.message !== "Sign-in cancelled by user"
+      ) {
         toast.error(error.message || "Error signing in with Google");
       }
     }

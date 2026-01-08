@@ -20,7 +20,7 @@ import { Loader2, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatPrice } from "@/lib/utils";
 import { createOrder } from "@/lib/firebase/orders";
-import { checkoutSchema, type CheckoutInput } from "@/lib/validations/checkout";
+import { checkoutSchema } from "@/lib/validations/checkout";
 import { calculateCartTotals } from "@/lib/cart";
 
 interface RazorpayOptions {
@@ -120,10 +120,6 @@ export default function CheckoutPage() {
 
     fetchProfile();
   }, [user, authLoading, router]);
-
-  function containsOnlyDigits(str: string): boolean {
-    return /^\d+$/.test(str);
-  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddress({ ...address, [e.target.name]: e.target.value });

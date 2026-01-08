@@ -1,6 +1,6 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { convertToModelMessages, streamText, tool } from 'ai';
-import { number, string, z } from 'zod';
+import { z } from 'zod';
 import { Product, searchProducts } from '@/lib/db/products';
 
 const google = createGoogleGenerativeAI({
@@ -8,33 +8,6 @@ const google = createGoogleGenerativeAI({
 });
 
 import { searchParamsSchema, compareProductsParamsSchema } from '@/lib/validations/chat';
-
-const compareProductsReturn = z.object({
-    message: z.string().optional(),
-    ranked: z
-        .array(
-            z.object({
-                id: z.string(),
-                name: z.string(),
-                price: z.number(),
-                rating: z.number(),
-                reviews: z.number(),
-                score: z.number(),
-            })
-        )
-        .optional(),
-    best: z
-        .object({
-            id: z.string(),
-            name: z.string(),
-            price: z.number(),
-            rating: z.number(),
-            reviews: z.number(),
-            score: z.number(),
-        })
-        .optional(),
-});
-
 
 // Define types for better type inference
 type SearchResult = {
@@ -111,73 +84,69 @@ User: “Compare DSLR and mirrorless camera”
 If no valid product keyword exists:
 Respond: “Please specify what product you want to compare.”
 `,
-            toolChoice: "auto",
-            tools: {
-                searchProducts: tool({
-                    description: "Search products",
-                    parameters: searchParamsSchema,
-                    execute: async ({ query }: { query: string }): Promise<SearchResult> => {
-                        console.log("TOOL RECEIVED QUERY:", query);
-                        if (!query || !query.trim()) {
-                            return { products: [], message: "Please specify a product name." };
-                        }
-                        const products = await searchProducts(query);
+        toolChoice: "auto",
+        tools: {
+            searchProducts: tool({
+                description: "Search products",
+                parameters: searchParamsSchema,
+                execute: async ({ query }: { query: string }): Promise<SearchResult> => {
+                    console.log("TOOL RECEIVED QUERY:", query);
+                    if (!query || !query.trim()) {
+                        return { products: [], message: "Please specify a product name." };
+                    }
+                    const products = await searchProducts(query);
 
-                        if (!products.length) {
-                            return { products: [], message: "No products found" };
-                        }
+                    if (!products.length) {
+                        return { products: [], message: "No products found" };
+                    }
 
-                        const result = products.map((p: Product) => ({
-                            id: p.id,
-                            name: p.name,
-                            price: p.price,
-                            rating: p.rating,
-                            reviews: p.reviews,
-                            image: p.image,
-                        }));
+                    const result = products.map((p: Product) => ({
+                        id: p.id,
+                        name: p.name,
+                        price: p.price,
+                        rating: p.rating,
+                        reviews: p.reviews,
+                        image: p.image,
+                    }));
 
-                        return {
-                            products: result,
-                            message: `Found ${result.length} result(s).`
-                        };
-                    },
-                } as any),
-                compareProducts: tool({
-                    description: "Compare products by rating, reviews, and price.",
-                    parameters: compareProductsParamsSchema,
-                    execute: async ({ products }: z.infer<typeof compareProductsParamsSchema>): Promise<CompareResult> => {
-                        if (!products || products.length < 2) {
-                            return {
-                                message: "Need at least 2 products to compare.",
-                                ranked: [],
-                                best: undefined,
-                            };
-                        }
-
-                        const scored = products.map((p) => {
-                            const score =
-                                p.rating * 2 +
-                                p.reviews * 0.02 -
-                                p.price * 0.001;
-
-                            return { ...p, score };
-                        });
-
-                        const sorted = scored.sort((a, b) => b.score - a.score);
-
+                    return {
+                        products: result,
+                        message: `Found ${result.length} result(s).`
+                    };
+                },
+            } as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+            compareProducts: tool({
+                description: "Compare products by rating, reviews, and price.",
+                parameters: compareProductsParamsSchema,
+                execute: async ({ products }: z.infer<typeof compareProductsParamsSchema>): Promise<CompareResult> => {
+                    if (!products || products.length < 2) {
                         return {
                             message: "Comparison complete.",
                             ranked: sorted,
                             best: sorted[0],
                         };
-                    },
-                } as any),
-            },
-        });
+                    }
 
-        return result.toUIMessageStreamResponse();
-    } catch (error) {
-        // Example of error handling that could return a Result if we weren't streaming
-        throw error;
-    }
+                    const scored = products.map((p) => {
+                        const score =
+                            p.rating * 2 +
+                            p.reviews * 0.02 -
+                            p.price * 0.001;
+
+                        return { ...p, score };
+                    });
+
+                    const sorted = scored.sort((a, b) => b.score - a.score);
+
+                    return {
+                        message: "Comparison complete.",
+                        ranked: sorted,
+                        best: sorted[0],
+                    };
+                },
+            } as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+        },
+    });
+
+    return result.toUIMessageStreamResponse();
 });

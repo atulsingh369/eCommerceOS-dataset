@@ -1,5 +1,5 @@
 
-import { render, screen } from '@testing-library/react';
+import { } from '@testing-library/react';
 
 describe('Empty Cart UI', () => {
     it('shows friendly message', () => {

@@ -1,4 +1,4 @@
-import { cn, formatPrice } from '@/lib/utils'
+import { cn, formatPrice, formatDate, truncate, slugify } from '@/lib/utils'
 
 describe('utils', () => {
     describe('cn', () => {
@@ -37,4 +37,52 @@ describe('utils', () => {
             expect(formatPrice(NaN)).toContain('0.00');
         });
     })
+
+    describe('formatDate', () => {
+        it('formats Date object correctly', () => {
+            const date = new Date('2023-01-01T00:00:00.000Z');
+            const result = formatDate(date);
+            expect(result).toMatch(/January 1, 2023|December 31, 2022/);
+        });
+
+        it('formats string date correctly', () => {
+            const result = formatDate('2023-01-01');
+            expect(result).toMatch(/January 1, 2023|December 31, 2022/);
+        });
+
+        it('handles Firestore-like Timestamp', () => {
+            const mockTimestamp = { toDate: () => new Date('2023-01-01T00:00:00.000Z') };
+            const result = formatDate(mockTimestamp);
+            expect(result).toMatch(/January 1, 2023|December 31, 2022/);
+        });
+
+        it('returns empty string for invalid date', () => {
+            expect(formatDate(undefined)).toBe('');
+            expect(formatDate(null)).toBe('');
+            expect(formatDate('invalid-date')).toBe('');
+        });
+    });
+
+    describe('truncate', () => {
+        it('truncates string longer than length', () => {
+            expect(truncate('hello world', 5)).toBe('hello...');
+        });
+
+        it('does not truncate string shorter than length', () => {
+            expect(truncate('hello', 10)).toBe('hello');
+        });
+
+        it('handles null/undefined', () => {
+            expect(truncate(null, 10)).toBe('');
+            expect(truncate(undefined, 10)).toBe('');
+        });
+    });
+
+    describe('slugify', () => {
+        it('converts string to slug', () => {
+            expect(slugify('Hello World')).toBe('hello-world');
+            expect(slugify('  Spaced  String  ')).toBe('spaced-string');
+            expect(slugify('Special @#$ Characters')).toBe('special-characters');
+        });
+    });
 })
