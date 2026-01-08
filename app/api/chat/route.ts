@@ -120,9 +120,7 @@ Respond: “Please specify what product you want to compare.”
                 execute: async ({ products }: z.infer<typeof compareProductsParamsSchema>): Promise<CompareResult> => {
                     if (!products || products.length < 2) {
                         return {
-                            message: "Comparison complete.",
-                            ranked: sorted,
-                            best: sorted[0],
+                            message: "Please provide at least two products to compare.",
                         };
                     }
 
