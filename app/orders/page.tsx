@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { Loader2, Package, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatDate } from "@/lib/utils";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import { Timestamp } from "firebase/firestore";
 
@@ -205,7 +205,7 @@ export default function OrdersPage() {
                         </p>
                         <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-1">
                           <span className="hidden md:inline">Ordered on</span>
-                          {orderDate.toLocaleDateString("en-US", {
+                          {formatDate(orderDate, {
                             month: "short",
                             day: "numeric",
                             year: "numeric",
