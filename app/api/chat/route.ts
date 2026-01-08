@@ -89,6 +89,7 @@ Respond: “Please specify what product you want to compare.”
                 description: "Search products",
                 parameters: searchParamsSchema,
                 execute: async ({ query }: { query: string }): Promise<SearchResult> => {
+                    console.log("TOOL RECEIVED QUERY:", query);
                     if (!query || !query.trim()) {
                         return { products: [], message: "Please specify a product name." };
                     }
@@ -112,21 +113,25 @@ Respond: “Please specify what product you want to compare.”
                         message: `Found ${result.length} result(s).`
                     };
                 },
-            } as any),
+            } as any), // eslint-disable-line @typescript-eslint/no-explicit-any
             compareProducts: tool({
                 description: "Compare products by rating, reviews, and price.",
                 parameters: compareProductsParamsSchema,
                 execute: async ({ products }: z.infer<typeof compareProductsParamsSchema>): Promise<CompareResult> => {
                     if (!products || products.length < 2) {
                         return {
-                            message: "Need at least 2 products to compare.",
-                            ranked: [],
-                            best: undefined,
+                            message: "Comparison complete.",
+                            ranked: sorted,
+                            best: sorted[0],
                         };
                     }
 
                     const scored = products.map((p) => {
-                        const score = p.rating * 2 + p.reviews * 0.02 - p.price * 0.001;
+                        const score =
+                            p.rating * 2 +
+                            p.reviews * 0.02 -
+                            p.price * 0.001;
+
                         return { ...p, score };
                     });
 
@@ -142,6 +147,5 @@ Respond: “Please specify what product you want to compare.”
         },
     });
 
-    return result.toTextStreamResponse();
-
+    return result.toUIMessageStreamResponse();
 });
