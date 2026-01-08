@@ -4,8 +4,6 @@
 
 A modular, AI-powered e-commerce platform built for modern retail.
 
-![CI](https://github.com/atulsingh369/eCommerceOS-dataset/actions/workflows/test.yml/badge.svg)
-
 ## 🚀 Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
