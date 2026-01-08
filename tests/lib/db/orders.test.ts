@@ -32,7 +32,7 @@ describe('Order DB Helpers', () => {
         };
 
         const result = await createOrder('user-1', orderData as any);
-        expect(result.orderId).toBe('order-123');
-        expect(addDoc).toHaveBeenCalled();
+        expect(result.orderId).toMatch(/^ORD-/);
+        expect(setDoc).toHaveBeenCalled();
     });
 });
