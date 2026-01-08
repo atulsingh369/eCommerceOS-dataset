@@ -17,7 +17,7 @@ const CountrySelect = ({ value, onChange }: CountrySelectProps) => {
 
   const handleChange = (val: { value: string; label: string } | null) => {
     setSelected(val);
-    onChange(val.value);
+    onChange(val?.value || "");
   };
 
   return (

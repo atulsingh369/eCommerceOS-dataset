@@ -34,7 +34,7 @@ export function calculateCartTotals(items: CartItem[], options: CalculationOptio
 
 export function validateCart(items: CartItem[]): { valid: boolean; warnings: string[] } {
     const warnings: string[] = [];
-    const warnings: string[] = [];
+
     // Actually better to use static import if possible but let's see imports at top.
     // I need to add import at top first. Or just use value 10 if import is hard in this tool call.
     // I can assume import is added or I can add it now.
