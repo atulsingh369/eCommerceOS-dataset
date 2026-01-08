@@ -1,3 +1,10 @@
+// Mock firebase config BEFORE imports
+jest.mock('@/lib/firebase/config', () => ({
+    auth: {},
+    db: {},
+    googleProvider: {},
+}));
+
 import { processOrder } from '@/lib/db/orders';
 
 // Mock firebase
