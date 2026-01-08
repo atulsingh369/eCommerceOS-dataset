@@ -50,11 +50,10 @@ import { apiHandler } from '@/lib/api-handler';
 export const POST = apiHandler(async (req: Request) => {
     const { messages } = await req.json();
 
-    try {
-        const result = streamText({
-            model: google("gemini-2.5-flash"),
-            messages: convertToModelMessages(messages),
-            system: `
+    const result = streamText({
+        model: google("gemini-1.5-flash"),
+        messages: convertToModelMessages(messages),
+        system: `
 You are an AI shopping assistant.
 
 Your responsibilities:
@@ -70,7 +69,7 @@ Your responsibilities:
       After retrieving products from searchProducts, call compareProducts.
 
 Rules:
-- NEVER compare by yourself. Only compare using the compareProducts tool.
+- NEVER compare by yourself. Only compare using the tool.
 - ALWAYS keep product comparison objective: rating, reviews, and price.
 - If fewer than 2 products are found, explain that more data is needed.
 - If user gives too many words, extract only the product keyword.
@@ -84,37 +83,36 @@ User: “Compare DSLR and mirrorless camera”
 If no valid product keyword exists:
 Respond: “Please specify what product you want to compare.”
 `,
-            toolChoice: "auto",
-            tools: {
-                searchProducts: tool({
-                    description: "Search products",
-                    parameters: searchParamsSchema,
-                    execute: async ({ query }: { query: string }): Promise<SearchResult> => {
-                        console.log("TOOL RECEIVED QUERY:", query);
-                        if (!query || !query.trim()) {
-                            return { products: [], message: "Please specify a product name." };
-                        }
-                        const products = await searchProducts(query);
+        toolChoice: "auto",
+        tools: {
+            searchProducts: tool({
+                description: "Search products",
+                parameters: searchParamsSchema,
+                execute: async ({ query }: { query: string }): Promise<SearchResult> => {
+                    if (!query || !query.trim()) {
+                        return { products: [], message: "Please specify a product name." };
+                    }
+                    const products = await searchProducts(query);
 
-                        if (!products.length) {
-                            return { products: [], message: "No products found" };
-                        }
+                    if (!products.length) {
+                        return { products: [], message: "No products found" };
+                    }
 
-                        const result = products.map((p: Product) => ({
-                            id: p.id,
-                            name: p.name,
-                            price: p.price,
-                            rating: p.rating,
-                            reviews: p.reviews,
-                            image: p.image,
-                        }));
+                    const result = products.map((p: Product) => ({
+                        id: p.id,
+                        name: p.name,
+                        price: p.price,
+                        rating: p.rating,
+                        reviews: p.reviews,
+                        image: p.image,
+                    }));
 
                     return {
                         products: result,
                         message: `Found ${result.length} result(s).`
                     };
                 },
-            } as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+            } as any),
             compareProducts: tool({
                 description: "Compare products by rating, reviews, and price.",
                 parameters: compareProductsParamsSchema,
@@ -127,16 +125,12 @@ Respond: “Please specify what product you want to compare.”
                         };
                     }
 
-                        const scored = products.map((p) => {
-                            const score =
-                                p.rating * 2 +
-                                p.reviews * 0.02 -
-                                p.price * 0.001;
+                    const scored = products.map((p) => {
+                        const score = p.rating * 2 + p.reviews * 0.02 - p.price * 0.001;
+                        return { ...p, score };
+                    });
 
-                            return { ...p, score };
-                        });
-
-                        const sorted = scored.sort((a, b) => b.score - a.score);
+                    const sorted = scored.sort((a, b) => b.score - a.score);
 
                     return {
                         message: "Comparison complete.",
@@ -148,9 +142,6 @@ Respond: “Please specify what product you want to compare.”
         },
     });
 
-        return result.toUIMessageStreamResponse();
-    } catch (error) {
-        // Example of error handling that could return a Result if we weren't streaming
-        throw error;
-    }
+    return result.toTextStreamResponse();
+
 });

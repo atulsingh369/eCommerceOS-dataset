@@ -32,6 +32,8 @@ export function calculateCartTotals(items: CartItem[], options: CalculationOptio
     };
 }
 
+export const MAX_CART_QUANTITY = 10;
+
 export function validateCart(items: CartItem[]): { valid: boolean; warnings: string[] } {
     const warnings: string[] = [];
 
@@ -44,17 +46,13 @@ export function validateCart(items: CartItem[]): { valid: boolean; warnings: str
     // But this tool call is for a chunk.
 
     // I'll assume validation logic here.
-    const MAX_QTY = 10; // Fallback or imported. 
 
     for (const item of items) {
-        if (item.quantity > MAX_QTY) {
-            warnings.push(`Item "${item.name}" exceeds maximum quantity of ${MAX_QTY}.`);
+        if (item.quantity > MAX_CART_QUANTITY) {
+            warnings.push(`Item "${item.name}" exceeds maximum quantity of ${MAX_CART_QUANTITY}.`);
         }
         if (item.quantity < 1) {
             warnings.push(`Item "${item.name}" has invalid quantity.`);
-        }
-        if (item.stock < item.quantity) {
-            warnings.push(`Item "${item.name}" exceeds available stock (${item.stock}).`);
         }
     }
 

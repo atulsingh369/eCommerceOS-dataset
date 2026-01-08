@@ -1,7 +1,21 @@
-// ... imports at top ...
+"use client";
+
 import { CartItem as CartItemComponent } from "@/components/cart/CartItem";
 import { CartSummary } from "@/components/cart/CartSummary";
-import { validateCart } from "@/lib/cart";
+import { useCart } from "@/context/CartContext";
+import {
+  validateCart,
+  calculateCartTotals,
+  MAX_CART_QUANTITY,
+} from "@/lib/cart";
+import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
+import { Button } from "@/components/ui/Button";
+import { Loader2 } from "lucide-react";
+import Image from "next/image";
+import toast from "react-hot-toast";
+import { useState } from "react";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 export default function CartPage() {
   const { user, loading: authLoading } = useAuth();
@@ -25,10 +39,16 @@ export default function CartPage() {
     await removeFromCart(id);
   };
 
-  const handleClearCart = async () => {
-    if (window.confirm("Are you sure you want to clear your cart?")) {
-      await clearCart();
-    }
+  const [isClearCartModalOpen, setIsClearCartModalOpen] = useState(false);
+
+  const handleClearCartClick = () => {
+    setIsClearCartModalOpen(true);
+  };
+
+  const confirmClearCart = async () => {
+    await clearCart();
+    setIsClearCartModalOpen(false);
+    toast.success("Cart cleared successfully");
   };
 
   const totals = calculateCartTotals(items);
@@ -124,10 +144,21 @@ export default function CartPage() {
         {/* Summary */}
         <CartSummary
           totals={totals}
-          onClearCart={handleClearCart}
+          onClearCart={handleClearCartClick}
           loading={cartLoading}
         />
       </div>
+
+      <ConfirmationModal
+        isOpen={isClearCartModalOpen}
+        onClose={() => setIsClearCartModalOpen(false)}
+        onConfirm={confirmClearCart}
+        title="Clear Cart"
+        description="Are you sure you want to remove all items from your cart? This action cannot be undone."
+        confirmLabel="Clear Cart"
+        variant="danger"
+        loading={cartLoading}
+      />
     </div>
   );
 }

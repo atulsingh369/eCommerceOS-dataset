@@ -23,7 +23,7 @@ export function apiHandler(handler: RouteHandler): RouteHandler {
 
             if (error instanceof z.ZodError) {
                 return NextResponse.json(
-                    { error: "Validation Error", details: error.errors },
+                    { error: "Validation Error", details: (error as z.ZodError<any>).issues },
                     { status: 400 }
                 );
             }
