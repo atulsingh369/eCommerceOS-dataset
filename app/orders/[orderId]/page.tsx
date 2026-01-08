@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/Separator";
 import { Loader2, ArrowLeft, MapPin, CreditCard, Package } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatDate } from "@/lib/utils";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import { OrderTimeline } from "@/components/orders/OrderTimeline";
 import { Timestamp } from "firebase/firestore";
@@ -88,7 +88,7 @@ export default function OrderDetailsPage() {
             </p>
             <p className="text-sm text-muted-foreground">
               Placed on{" "}
-              {orderDate.toLocaleDateString("en-US", {
+              {formatDate(orderDate, {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
