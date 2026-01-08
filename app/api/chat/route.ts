@@ -7,19 +7,7 @@ const google = createGoogleGenerativeAI({
     apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
 });
 
-const searchParams = z.object({
-    query: z.string(),
-});
-
-const compareProductsParams = z.object({
-    products: z.array(z.object({
-        id: z.string(),
-        name: z.string(),
-        price: z.number(),
-        rating: z.number(),
-        reviews: z.number(),
-    }))
-});
+import { searchParamsSchema, compareProductsParamsSchema } from '@/lib/validations/chat';
 
 const compareProductsReturn = z.object({
     message: z.string().optional(),
@@ -122,9 +110,7 @@ Respond: “Please specify what product you want to compare.”
         tools: {
             searchProducts: tool({
                 description: "Search products",
-                parameters: z.object({
-                    query: z.string(),
-                }),
+                parameters: searchParamsSchema,
                 execute: async ({ query }: { query: string }): Promise<SearchResult> => {
                     console.log("TOOL RECEIVED QUERY:", query);
                     if (!query || !query.trim()) {
@@ -153,8 +139,8 @@ Respond: “Please specify what product you want to compare.”
             } as any),
             compareProducts: tool({
                 description: "Compare products by rating, reviews, and price.",
-                parameters: compareProductsParams,
-                execute: async ({ products }: z.infer<typeof compareProductsParams>): Promise<CompareResult> => {
+                parameters: compareProductsParamsSchema,
+                execute: async ({ products }: z.infer<typeof compareProductsParamsSchema>): Promise<CompareResult> => {
                     if (!products || products.length < 2) {
                         return {
                             message: "Need at least 2 products to compare.",

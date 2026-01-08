@@ -11,3 +11,5 @@ export const checkoutSchema = z.object({
         .string()
         .regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
 });
+
+export type CheckoutInput = z.infer<typeof checkoutSchema>;

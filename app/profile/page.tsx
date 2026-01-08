@@ -15,6 +15,7 @@ import { Loader2, User, Phone, MapPin, Mail, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import CountrySelect from "@/components/CountrySelect";
+import { profileSchema } from "@/lib/validations/profile";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -75,18 +76,20 @@ export default function ProfilePage() {
     if (!user) return;
 
     // Validation
-    if (!displayName.trim()) {
-      toast.error("Name is required");
-      return;
-    }
+    const result = profileSchema.safeParse({
+      displayName,
+      phoneNumber,
+      addressLine1,
+      addressLine2,
+      city,
+      state,
+      pincode,
+      country,
+    });
 
-    if (phoneNumber && !/^\d{10}$/.test(phoneNumber)) {
-      toast.error("Phone number must be 10 digits");
-      return;
-    }
-
-    if (pincode && !/^\d{6}$/.test(pincode)) {
-      toast.error("Pincode must be 6 digits");
+    if (!result.success) {
+      const firstError = result.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 

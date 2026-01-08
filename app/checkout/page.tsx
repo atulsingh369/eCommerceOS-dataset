@@ -20,7 +20,7 @@ import { Loader2, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatPrice } from "@/lib/utils";
 import { createOrder } from "@/lib/firebase/orders";
-import { checkoutSchema } from "@/lib/checkoutSchema";
+import { checkoutSchema, type CheckoutInput } from "@/lib/validations/checkout";
 import { calculateCartTotals } from "@/lib/cart";
 
 interface RazorpayOptions {
