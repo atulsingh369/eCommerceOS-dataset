@@ -58,7 +58,12 @@ export function slugify(str: string): string {
   return str
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+export function calculatePercentage(partialValue: number, totalValue: number): number {
+  if (totalValue === 0) {
+    return 0;
+  }
+  return (100 * partialValue) / totalValue;
 }
