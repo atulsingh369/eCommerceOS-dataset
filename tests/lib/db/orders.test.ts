@@ -14,6 +14,10 @@ jest.mock('firebase/firestore', () => ({
     serverTimestamp: jest.fn(),
     doc: jest.fn(),
     setDoc: jest.fn(),
+    Timestamp: {
+        now: jest.fn(() => ({ toDate: () => new Date() })),
+        fromDate: jest.fn(),
+    },
 }));
 
 describe('Order DB Helpers', () => {
