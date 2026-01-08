@@ -5,7 +5,7 @@ jest.mock('@/lib/firebase/config', () => ({
     googleProvider: {},
 }));
 
-import { processOrder } from '@/lib/db/orders';
+import { createOrder } from '@/lib/firebase/orders';
 
 // Mock firebase
 jest.mock('firebase/firestore', () => ({
@@ -16,18 +16,18 @@ jest.mock('firebase/firestore', () => ({
 }));
 
 describe('Order DB Helpers', () => {
-    it('processOrder creates document', async () => {
+    it('createOrder creates document', async () => {
         const { addDoc } = require('firebase/firestore');
         addDoc.mockResolvedValue({ id: 'order-123' });
 
         const orderData = {
             items: [],
-            total: 100,
+            priceBreakdown: { total: 100 },
             userId: 'user-1'
         };
 
-        const result = await processOrder(orderData as any);
-        expect(result).toBe('order-123');
+        const result = await createOrder('user-1', orderData as any);
+        expect(result.orderId).toBe('order-123');
         expect(addDoc).toHaveBeenCalled();
     });
 });
