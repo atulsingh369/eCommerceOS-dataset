@@ -34,7 +34,9 @@ export function CartSummary({
         <CardContent className="space-y-4">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Subtotal</span>
-            <span className="font-medium">{formatPrice(totals.subtotal)}</span>
+            <span className="font-medium" data-testid="summary-subtotal">
+              {formatPrice(totals.subtotal)}
+            </span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Taxes (Est.)</span>
@@ -55,12 +57,17 @@ export function CartSummary({
           <Separator />
           <div className="flex justify-between text-lg font-bold">
             <span>Total</span>
-            <span>{formatPrice(totals.total)}</span>
+            <span data-testid="summary-total">{formatPrice(totals.total)}</span>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <Link href="/checkout" className="w-full">
-            <Button className="w-full" size="lg" disabled={loading}>
+            <Button
+              className="w-full"
+              size="lg"
+              disabled={loading}
+              data-testid="checkout-button"
+            >
               Checkout <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -75,6 +82,7 @@ export function CartSummary({
         className="w-full text-red-500 hover:text-red-600 hover:bg-red-50"
         onClick={onClearCart}
         disabled={loading}
+        data-testid="clear-cart-button"
       >
         <Trash2 className="h-4 w-4 mr-2" />
         Clear Shopping Cart
