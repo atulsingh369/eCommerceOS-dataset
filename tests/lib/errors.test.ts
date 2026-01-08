@@ -22,9 +22,9 @@ describe("Error Classes", () => {
     });
 
     it("DatabaseError defaults", () => {
-        const error = new DatabaseError();
+        const error = new DatabaseError("Database error occurred");
         expect(error.statusCode).toBe(500);
-        expect(error.code).toBe("DB_ERROR");
+        expect(error.code).toBe("DATABASE_ERROR");
     });
 
     it("UnauthorizedError defaults", () => {

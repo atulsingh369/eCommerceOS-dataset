@@ -37,22 +37,15 @@ export const MAX_CART_QUANTITY = 10;
 export function validateCart(items: CartItem[]): { valid: boolean; warnings: string[] } {
     const warnings: string[] = [];
 
-    // Actually better to use static import if possible but let's see imports at top.
-    // I need to add import at top first. Or just use value 10 if import is hard in this tool call.
-    // I can assume import is added or I can add it now.
-    // I will stick to adding the function body and updating imports in a separate call if needed, 
-    // OR use the number 100 for now if MAX_CART usage is complex. 
-    // Actually I can add the import to the top of the file in the same call if I view the whole file? 
-    // But this tool call is for a chunk.
-
-    // I'll assume validation logic here.
-
     for (const item of items) {
         if (item.quantity > MAX_CART_QUANTITY) {
             warnings.push(`Item "${item.name}" exceeds maximum quantity of ${MAX_CART_QUANTITY}.`);
         }
         if (item.quantity < 1) {
             warnings.push(`Item "${item.name}" has invalid quantity.`);
+        }
+        if (item.stock !== undefined && item.quantity > item.stock) {
+            warnings.push(`Item "${item.name}" exceeds available stock of ${item.stock}.`);
         }
     }
 

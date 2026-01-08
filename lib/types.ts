@@ -2,6 +2,7 @@ import { Product } from "./db/products";
 
 export interface CartItem extends Product {
     quantity: number;
+    stock?: number;
 }
 
 export interface CartTotals {
