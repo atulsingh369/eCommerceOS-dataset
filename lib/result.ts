@@ -9,20 +9,15 @@ export const isOk = <T, E>(result: Result<T, E>): result is { ok: true; value: T
 export const isErr = <T, E>(result: Result<T, E>): result is { ok: false; error: E } => !result.ok;
 
 export const unwrap = <T, E>(result: Result<T, E>): T => {
-    if (result.ok) {
-        return result.value;
-    }
+    if (result.ok) return result.value;
     throw result.error;
 };
 
-export const safeTry = async <T>(promise: Promise<T>): Promise<Result<T, Error>> => {
+export const safeTry = async <T, E = Error>(promise: Promise<T>): Promise<Result<T, E>> => {
     try {
         const data = await promise;
         return Ok(data);
     } catch (error) {
-        if (error instanceof Error) {
-            return Err(error);
-        }
-        return Err(new Error(String(error)));
+        return Err(error as E);
     }
 };

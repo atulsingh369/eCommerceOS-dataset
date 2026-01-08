@@ -1,6 +1,6 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { convertToModelMessages, streamText, tool } from 'ai';
-import { number, string, z } from 'zod';
+import { z } from 'zod';
 import { Product, searchProducts } from '@/lib/db/products';
 
 const google = createGoogleGenerativeAI({
@@ -8,33 +8,6 @@ const google = createGoogleGenerativeAI({
 });
 
 import { searchParamsSchema, compareProductsParamsSchema } from '@/lib/validations/chat';
-
-const compareProductsReturn = z.object({
-    message: z.string().optional(),
-    ranked: z
-        .array(
-            z.object({
-                id: z.string(),
-                name: z.string(),
-                price: z.number(),
-                rating: z.number(),
-                reviews: z.number(),
-                score: z.number(),
-            })
-        )
-        .optional(),
-    best: z
-        .object({
-            id: z.string(),
-            name: z.string(),
-            price: z.number(),
-            rating: z.number(),
-            reviews: z.number(),
-            score: z.number(),
-        })
-        .optional(),
-});
-
 
 // Define types for better type inference
 type SearchResult = {
@@ -136,23 +109,23 @@ Respond: “Please specify what product you want to compare.”
                             image: p.image,
                         }));
 
+                    return {
+                        products: result,
+                        message: `Found ${result.length} result(s).`
+                    };
+                },
+            } as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+            compareProducts: tool({
+                description: "Compare products by rating, reviews, and price.",
+                parameters: compareProductsParamsSchema,
+                execute: async ({ products }: z.infer<typeof compareProductsParamsSchema>): Promise<CompareResult> => {
+                    if (!products || products.length < 2) {
                         return {
-                            products: result,
-                            message: `Found ${result.length} result(s).`
+                            message: "Need at least 2 products to compare.",
+                            ranked: [],
+                            best: undefined,
                         };
-                    },
-                } as any),
-                compareProducts: tool({
-                    description: "Compare products by rating, reviews, and price.",
-                    parameters: compareProductsParamsSchema,
-                    execute: async ({ products }: z.infer<typeof compareProductsParamsSchema>): Promise<CompareResult> => {
-                        if (!products || products.length < 2) {
-                            return {
-                                message: "Need at least 2 products to compare.",
-                                ranked: [],
-                                best: undefined,
-                            };
-                        }
+                    }
 
                         const scored = products.map((p) => {
                             const score =
@@ -165,15 +138,15 @@ Respond: “Please specify what product you want to compare.”
 
                         const sorted = scored.sort((a, b) => b.score - a.score);
 
-                        return {
-                            message: "Comparison complete.",
-                            ranked: sorted,
-                            best: sorted[0],
-                        };
-                    },
-                } as any),
-            },
-        });
+                    return {
+                        message: "Comparison complete.",
+                        ranked: sorted,
+                        best: sorted[0],
+                    };
+                },
+            } as any),
+        },
+    });
 
         return result.toUIMessageStreamResponse();
     } catch (error) {

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { } from '@testing-library/react';
 import OrdersPage from '@/app/orders/page';
 
 // Mock dependencies

@@ -14,8 +14,8 @@ export class AppError extends Error {
 }
 
 export class APIError extends AppError {
-    constructor(message: string, statusCode = 500) {
-        super(message, statusCode, "API_ERROR");
+    constructor(message: string, statusCode = 500, code = "API_ERROR") {
+        super(message, statusCode, code);
     }
 }
 
@@ -31,14 +31,14 @@ export class ValidationError extends AppError {
     }
 }
 
-export class UnauthorizedError extends AppError {
-    constructor(message = "Unauthorized") {
-        super(message, 401, "UNAUTHORIZED");
+export class DatabaseError extends AppError {
+    constructor(message: string, public readonly originalError?: any) {
+        super(message, 500, "DATABASE_ERROR");
     }
 }
 
-export class DatabaseError extends AppError {
-    constructor(message = "Database error") {
-        super(message, 500, "DB_ERROR");
+export class UnauthorizedError extends AppError {
+    constructor(message = "Unauthorized") {
+        super(message, 401, "UNAUTHORIZED");
     }
 }

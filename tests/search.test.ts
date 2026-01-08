@@ -1,4 +1,4 @@
-import { getProducts, Product } from '@/lib/db/products';
+import { } from '@/lib/db/products';
 
 // Mock dependencies
 jest.mock('@/lib/firebase', () => ({

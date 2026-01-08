@@ -4,9 +4,15 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Separator } from "@/components/ui/Separator";
 import { Badge } from "@/components/ui/Badge";
-import { getProducts, getCategories, Category, Product } from "@/lib/db/products";
+import {
+  getProducts,
+  getCategories,
+  Category,
+  Product,
+} from "@/lib/db/products";
 import { ProductFilters } from "@/components/product/ProductFilters";
-import { formatPrice } from "@/lib/utils";
+
+import { formatPrice, truncate } from "@/lib/utils";
 
 interface ProductsPageProps {
   searchParams: {
@@ -142,8 +148,11 @@ export default async function ProductsPage(props: ProductsPageProps) {
                   )}
                 </div>
                 <CardContent className="p-4 pt-4">
-                  <h3 className="font-semibold text-lg leading-tight group-hover:underline line-clamp-1">
-                    {product.name}
+                  <h3
+                    className="font-semibold text-lg leading-tight group-hover:underline line-clamp-1"
+                    title={product.name}
+                  >
+                    {truncate(product.name, 40)}
                   </h3>
                   <p className="text-sm text-muted-foreground capitalize mt-1">
                     {product.category}

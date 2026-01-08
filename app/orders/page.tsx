@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { Loader2, Package, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatDate } from "@/lib/utils";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import { Timestamp } from "firebase/firestore";
 
@@ -151,7 +151,7 @@ export default function OrdersPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredOrders.map((order, index) => {
+          {filteredOrders.map((order) => {
             // Safety checks
             if (
               !order ||
@@ -205,7 +205,7 @@ export default function OrdersPage() {
                         </p>
                         <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-1">
                           <span className="hidden md:inline">Ordered on</span>
-                          {orderDate.toLocaleDateString("en-US", {
+                          {formatDate(orderDate, {
                             month: "short",
                             day: "numeric",
                             year: "numeric",

@@ -3,31 +3,15 @@ import { AppError } from "./exceptions";
 import { z } from "zod";
 import { Result, isOk, isErr } from "./result";
 
-type RouteHandler = (req: Request, ...args: any[]) => Promise<Response | Result<any, any>>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RouteHandler = (req: Request, ...args: any[]) => Promise<Response>;
 
-export function apiHandler(handler: RouteHandler): (req: Request, ...args: any[]) => Promise<NextResponse> {
+export function apiHandler(handler: RouteHandler): RouteHandler {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return async (req: Request, ...args: any[]) => {
         try {
-            const result = await handler(req, ...args);
-
-            // Handle Result pattern
-            if (result && typeof result === 'object' && 'ok' in result) {
-                if (isOk(result)) {
-                    return NextResponse.json(result.value);
-                } else if (isErr(result)) {
-                    throw result.error;
-                }
-            }
-
-            // Handle standard Response object
-            if (result instanceof Response) {
-                return result as NextResponse;
-            }
-
-            // Fallback (shouldn't happen if properly typed)
-            return NextResponse.json(result);
-
-        } catch (error: any) {
+            return await handler(req, ...args);
+        } catch (error: unknown) {
             console.error("API Error:", error);
 
             if (error instanceof AppError) {

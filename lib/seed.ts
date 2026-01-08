@@ -1,6 +1,7 @@
 import { db } from "@/lib/firebase";
 import { addDoc, collection } from "firebase/firestore";
 import { products, categories } from "@/lib/mockData";
+import { slugify } from "@/lib/utils";
 
 export const seedDatabase = async () => {
   try {
@@ -12,7 +13,10 @@ export const seedDatabase = async () => {
 
     // Seed products
     for (const product of products) {
-      await addDoc(collection(db, "products"), product);
+      await addDoc(collection(db, "products"), {
+        ...product,
+        slug: slugify(product.name),
+      });
       console.log("Product added:", product.name);
     }
 
