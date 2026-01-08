@@ -1,5 +1,19 @@
 import { calculateCartTotals, CartItem } from '@/lib/cart';
 
+jest.mock("@/lib/firebase", () => ({
+    db: {}
+}));
+jest.mock("firebase/firestore", () => ({
+    collection: jest.fn(),
+    doc: jest.fn(),
+    getDoc: jest.fn(),
+    getDocs: jest.fn(),
+    setDoc: jest.fn(),
+    updateDoc: jest.fn(),
+    deleteDoc: jest.fn(),
+    query: jest.fn(),
+}));
+
 const mockItems: CartItem[] = [
     { id: '1', name: 'Item 1', price: 100, quantity: 2, image: '', category: 'test', description: '', reviews: 0, rating: 5, features: [], stock: 10 },
     { id: '2', name: 'Item 2', price: 50, quantity: 1, image: '', category: 'test', description: '', reviews: 0, rating: 5, features: [], stock: 10 },
