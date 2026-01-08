@@ -32,6 +32,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
             className="text-muted-foreground hover:text-destructive"
             onClick={() => onRemove(item.id)}
             aria-label="Remove item"
+            data-testid="remove-item-button"
           >
             <Trash2 className="h-5 w-5" />
           </Button>
@@ -44,15 +45,22 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
               className="h-8 w-8 rounded-none"
               onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
               disabled={item.quantity <= 1}
+              data-testid="decrease-quantity"
             >
               <Minus className="h-3 w-3" />
             </Button>
-            <span className="w-10 text-center text-sm">{item.quantity}</span>
+            <span
+              className="w-10 text-center text-sm"
+              data-testid="item-quantity"
+            >
+              {item.quantity}
+            </span>
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 rounded-none"
               onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+              data-testid="increase-quantity"
             >
               <Plus className="h-3 w-3" />
             </Button>
