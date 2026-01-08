@@ -69,8 +69,12 @@ type CompareResult = {
     };
 };
 
+import { apiHandler } from '@/lib/api-handler';
+
+// ... imports remain the same but need to ensure order ...
+
 // Main POST handler for chat
-export async function POST(req: Request) {
+export const POST = apiHandler(async (req: Request) => {
     const { messages } = await req.json();
 
     const result = streamText({
@@ -171,4 +175,4 @@ Respond: “Please specify what product you want to compare.”
     });
 
     return result.toUIMessageStreamResponse();
-}
+});
