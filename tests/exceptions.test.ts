@@ -2,7 +2,7 @@ import { AppError, APIError, NotFoundError } from "@/lib/exceptions";
 
 describe("Exception Classes", () => {
     it("AppError sets properties correctly", () => {
-        const error = new AppError("Test Error", 418, false);
+        const error = new AppError("Test Error", 418, "TEAPOT_ERROR", false);
         expect(error.message).toBe("Test Error");
         expect(error.statusCode).toBe(418);
         expect(error.isOperational).toBe(false);

@@ -10,6 +10,8 @@ import {
     deleteDoc
 } from "firebase/firestore";
 import { User } from "firebase/auth";
+import { Result, Ok, Err } from "../result";
+import { AppError, DatabaseError, ValidationError, NotFoundError } from "../exceptions";
 
 export interface UserData {
     uid: string;
@@ -23,34 +25,19 @@ export interface UserData {
 
 /**
  * Creates or updates a user document in Firestore.
- * 
- * Logic:
- * 1. Validates that user has both email and displayName
- * 2. Checks if a user document with the same EMAIL already exists (prevents duplicates)
- * 3. If email exists, updates that document (merges accounts)
- * 4. If not, creates a new document under users/{uid}
- * 5. Creates cart and orders subcollections if this is a new user
- * 
- * This ensures:
- * - Google OAuth and email/password accounts with same email share one Firestore document
- * - No duplicate user documents
- * - Subcollections are initialized for new users
+ * Returns a Result indicating success or failure.
  */
-export async function createOrUpdateUserDocument(user: User): Promise<void> {
+export async function createOrUpdateUserDocument(user: User): Promise<Result<void, AppError>> {
     if (!user) {
-        console.error("createOrUpdateUserDocument: No user provided");
-        return;
+        return Err(new ValidationError("No user provided"));
     }
 
-    // Requirement 3: Validation - No user document unless name and email exist
     if (!user.email) {
-        console.error("Cannot create user document: Missing email");
-        return;
+        return Err(new ValidationError("Cannot create user document: Missing email"));
     }
 
     if (!user.displayName) {
-        console.error("Cannot create user document: Missing displayName");
-        return;
+        return Err(new ValidationError("Cannot create user document: Missing displayName"));
     }
 
     const userEmail = user.email;
@@ -71,8 +58,6 @@ export async function createOrUpdateUserDocument(user: User): Promise<void> {
             // Found existing user with this email - use that document
             const existingUserDoc = emailQuerySnapshot.docs[0];
             userDocRef = doc(db, "users", existingUserDoc.id);
-
-            console.log(`Found existing user by email. Using document: ${existingUserDoc.id}`);
 
             // Update the existing document with latest info
             await setDoc(userDocRef, {
@@ -99,23 +84,23 @@ export async function createOrUpdateUserDocument(user: User): Promise<void> {
             };
 
             await setDoc(userDocRef, userData);
-            console.log(`Created new user document: ${user.uid}`);
         }
 
-        // Step 2: Create subcollections for new users (Requirement 5)
+        // Step 2: Create subcollections for new users
         if (isNewUser) {
             await initializeUserSubcollections(user.uid);
         }
 
+        return Ok(undefined);
+
     } catch (error) {
         console.error("Error in createOrUpdateUserDocument:", error);
-        throw error;
+        return Err(new DatabaseError(error instanceof Error ? error.message : "Unknown database error"));
     }
 }
 
 /**
  * Initializes cart and orders subcollections for a new user
- * Creates placeholder documents to ensure subcollections exist
  */
 async function initializeUserSubcollections(uid: string): Promise<void> {
     try {
@@ -137,9 +122,8 @@ async function initializeUserSubcollections(uid: string): Promise<void> {
 
         await deleteDoc(ordersRef);
 
-        console.log(`Initialized subcollections for user: ${uid}`);
     } catch (error) {
         console.error("Error initializing subcollections:", error);
-        // Don't throw - subcollection creation is not critical
+        // Don't propagate here as it's non-critical
     }
 }
