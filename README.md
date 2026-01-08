@@ -4,7 +4,7 @@
 
 A modular, AI-powered e-commerce platform built for modern retail.
 
-![CI](https://github.com/atulsingh369/eCommerceOS/actions/workflows/test.yml/badge.svg)
+![CI](https://github.com/atulsingh369/eCommerceOS-dataset/actions/workflows/test.yml/badge.svg)
 
 ## 🚀 Tech Stack
 
@@ -35,8 +35,8 @@ To run this project, you will need to add the following environment variables to
 ### Installation
 
 ```bash
-git clone https://github.com/atulsingh369/eCommerceOS.git
-cd eCommerceOS
+git clone https://github.com/atulsingh369/eCommerceOS-dataset.git
+cd eCommerceOS-dataset
 npm install
 ```
 
